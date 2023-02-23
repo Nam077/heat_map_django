@@ -8,7 +8,7 @@ urlpatterns = [
     path('room/', views.room, name='room'),
     path('room/<int:room_id>/', views.room_detail, name='room_detail'),
     path('image_upload/', views.image_upload, name='image_upload'),
-    path('api/imagelatest/', views.latestImageUpload, name='image_upload_latest'),
+    path('api/image/latest/', views.ImageLatestList.as_view(), name='image_latest'),
     path('api/image/', views.ImageUploadList.as_view(), name='image_upload_list'),
     path('api/image/<int:pk>/', views.ImageUploadDetail.as_view(), name='image_upload_detail'),
 ]

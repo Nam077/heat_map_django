@@ -63,6 +63,25 @@ def latestImageUpload(request):
     return render(request, 'base/latestImageUpload.html', {'imageAll': image_all})
 
 
+def query(request):
+    # get one image latest
+    image_all = ImageUpload.objects.all().order_by('-created_at')[:1]
+    return Response(ImageUploadSerializer(image_all, many=True).data, status=status.HTTP_200_OK)
+
+
+class ImageLatestList(ListCreateAPIView):
+    queryset = ImageUpload.objects.all()
+    serializer_class = ImageUploadSerializer
+
+    def get_queryset(self):
+        image_all = ImageUpload.objects.all().order_by('-created_at')[:1]
+        return image_all
+
+    def list(self, request, *args, **kwargs):
+        queryset = self.filter_queryset(self.get_queryset())
+        return Response(ImageUploadSerializer(queryset, many=True).data, status=status.HTTP_200_OK)
+
+
 class ImageUploadList(ListCreateAPIView):
     serializer_class = ImageUploadSerializer
     queryset = ImageUpload.objects.all()
