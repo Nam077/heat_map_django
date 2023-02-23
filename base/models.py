@@ -16,4 +16,21 @@ class ImageUpload(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):
-        return self.name
+        return self.image
+
+
+enum_image_type = (
+    ('image_chart', 'image_chart'),
+    ('image_result', 'image_result'),
+)
+
+
+class ImageResult(models.Model):
+    image = models.ImageField(upload_to=upload_location, max_length=500)
+    type = models.CharField(max_length=20, choices=enum_image_type)
+    uploaded_at = models.DateTimeField(auto_now_add=True)
+    created_at = models.DateTimeField(auto_now=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return self.image

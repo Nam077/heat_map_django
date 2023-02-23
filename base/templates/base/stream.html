@@ -1,0 +1,98 @@
+{% extends 'dashboard.html' %}
+
+{% block content %}
+
+
+
+    <div>
+        <div>
+            <h3>
+                Stream video
+            </h3>
+            <img class="img-fluid" id="image" src="{{ image_upload.image }}" alt="">
+        </div>
+        <div>
+            <h3>
+                Result
+            </h3>
+            <img class="img-fluid" id="image_result" src="{{ image_result_upload_result.image }}" alt="">
+        </div>
+        <div>
+            <h3>
+                Chart
+            </h3>
+            <img class="img-fluid" id="image_chart" src="{{ image_result_upload_chart.image }}" alt="">
+        </div>
+    </div>
+{% endblock %} }}
+
+{% block jscustom %}
+    <script>
+        $(document).ready(function () {
+            let image = $('#image');
+            let currentDataImage = {
+                id: 0
+            }
+            let image_result = $('#image_result');
+            let image_chart = $('#image_chart');
+
+            let currentDataChart = {
+                id: 0
+            }
+
+            let currentDataResult = {
+                id: 0
+            }
+           const interver1 = setInterval((e) => {
+                $.ajax({
+                    url: '/api/image/latest',
+                    type: 'GET',
+                    dataType: 'json',
+                    success: function (data) {
+
+                        if (currentDataImage.id !== data.id) {
+                            console.log(currentDataImage.id, data[0].image)
+                            currentDataImage = data[0];
+                            image.attr('src', data[0].image);
+                            console.log(image.attr('src'))
+                        }
+                    }
+                })
+            }, 500);
+            const interver2 =  setInterval((e) => {
+                $.ajax({
+                    url: '/api/image_result/latest?type=image_chart',
+                    type: 'GET',
+                    dataType: 'json',
+                    success: function (data) {
+
+                        if (currentDataChart.id !== data.id) {
+                            console.log(currentDataChart.id, data[0].image)
+                            currentDataChart = data[0];
+                            image_chart.attr('src', data[0].image);
+                            console.log(image_chart.attr('src'))
+                        }
+                    }
+                })
+            }, 500);
+           const interver3 =   setInterval((e) => {
+                $.ajax({
+                    url: '/api/image_result/latest?type=image_result',
+                    type: 'GET',
+                    dataType: 'json',
+                    success: function (data) {
+
+                        if (currentDataResult.id !== data.id) {
+                            console.log(currentDataResult.id, data[0].image)
+                            currentDataResult = data[0];
+                            image_result.attr('src', data[0].image);
+                            console.log(image_result.attr('src'))
+
+                        }
+                    }
+                });
+            }, 500);
+
+        })
+    </script>
+{% endblock %}

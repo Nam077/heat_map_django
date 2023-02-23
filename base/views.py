@@ -4,9 +4,9 @@ from rest_framework import status
 from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView
 from rest_framework.response import Response
 
-from base.form import ImageUploadForm
-from base.models import ImageUpload
-from base.serializer import ImageUploadSerializer
+from base.form import ImageUploadForm, ImageResultForm
+from base.models import ImageUpload, ImageResult
+from base.serializer import ImageUploadSerializer, ImageResultSerializer
 
 # Create your views here.
 
@@ -58,15 +58,51 @@ def image_upload(request):
     return render(request, 'base/upload.html', {'form': form})
 
 
-def latestImageUpload(request):
-    image_all = ImageUpload.objects.all()
-    return render(request, 'base/latestImageUpload.html', {'imageAll': image_all})
+def image_result_upload(request):
+    if request.method == 'POST':
+        form = ImageResultForm(request.POST, request.FILES)
+
+        if form.is_valid():
+            form.save()
+            return render(request, 'base/upload.html', {'message': 'Image Uploaded Successfully'})
+    else:
+        form = ImageResultForm()
+    return render(request, 'base/upload_result.html', {'form': form})
+
+
+def stream(request):
+    image_upload_new = ImageUpload.objects.latest('created_at')
+    image_result_upload_chart = ImageResult.objects.latest('created_at')
+    image_result_upload_result = ImageResult.objects.latest('created_at')
+    return render(request, 'base/stream.html',
+                  {'image_upload': image_upload_new, 'image_result_upload_chart': image_result_upload_chart,
+                   'image_result_upload_result': image_result_upload_result})
 
 
 def query(request):
     # get one image latest
     image_all = ImageUpload.objects.all().order_by('-created_at')[:1]
     return Response(ImageUploadSerializer(image_all, many=True).data, status=status.HTTP_200_OK)
+
+
+class ImageResultLatestList(ListCreateAPIView):
+    queryset = ImageResult.objects.all().order_by('-created_at')[:1]
+    serializer_class = ImageResultSerializer
+
+    def get(self, request, *args, **kwargs):
+        image_type = self.request.query_params.get('type', None)
+        if image_type == 'image_chart':
+            image_result = ImageResult.objects.filter(type='image_chart').order_by('-created_at')[:1]
+        elif image_type == 'image_result':
+            image_result = ImageResult.objects.filter(type='image_result').order_by('-created_at')[:1]
+        else:
+            image_result = ImageResult.objects.all().order_by('-created_at')[:1]
+        return Response(ImageResultSerializer(image_result, many=True).data, status=status.HTTP_200_OK)
+
+
+def list(self, request, *args, **kwargs):
+    queryset = self.filter_queryset(self.get_queryset())
+    return Response(ImageResultSerializer(queryset, many=True).data, status=status.HTTP_200_OK)
 
 
 class ImageLatestList(ListCreateAPIView):
@@ -107,6 +143,34 @@ class ImageUploadList(ListCreateAPIView):
 
     def get_queryset(self):
         queryset = ImageUpload.objects.all()
+        return queryset
+
+
+class ImageResultList(ListCreateAPIView):
+    serializer_class = ImageResultSerializer
+    queryset = ImageResult.objects.all()
+
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        self.perform_create(serializer)
+        headers = self.get_success_headers(serializer.data)
+        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+
+    def perform_create(self, serializer):
+        serializer.save()
+
+    def list(self, request, *args, **kwargs):
+        queryset = self.filter_queryset(self.get_queryset())
+        page = self.paginate_queryset(queryset)
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+            return self.get_paginated_response(serializer.data)
+        serializer = self.get_serializer(queryset, many=True)
+        return Response(serializer.data)
+
+    def get_queryset(self):
+        queryset = ImageResult.objects.all()
         return queryset
 
 
