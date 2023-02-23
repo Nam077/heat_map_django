@@ -1,0 +1,24 @@
+{% extends 'main.html' %}
+
+{% block content %}
+    <h1>
+        Room page template
+    </h1>
+    <div>
+        {% for room in rooms %}
+            <div>
+                <h5>
+                    {{ room.name }}
+                </h5>
+                <p>
+                    {{ room.price }}
+                </p>
+                <a href="{% url 'room_detail' room_id=room.id %}">
+                    <button>
+                        View Details
+                    </button>
+                </a>
+            </div>
+        {% endfor %}
+    </div>
+{% endblock %} }}
